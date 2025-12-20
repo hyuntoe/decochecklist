@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>모비노기 데코 체크 리스트</title>
+    <style>
+        body { font-family: sans-serif; display: flex; justify-content: center; padding: 50px; background: #f5f5f5; }
+        .container { width: 300px; background: white; padding: 20px; border-radius: 12px; shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        h2 { font-size: 1.2rem; margin-bottom: 20px; color: #333; }
+        
+        /* 아이템 스타일 */
+        .item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            margin-bottom: 8px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        /* 딤드(Dimmed) 및 체크 처리 */
+        .item.checked {
+            background-color: #f9f9f9;
+            opacity: 0.5; /* 흐리게 처리 */
+        }
+        .item.checked .text {
+            text-decoration: line-through;
+        }
+
+        .icon { margin-right: 12px; font-size: 1.2rem; }
+        .text { flex-grow: 1; font-size: 1rem; }
+        .check-mark { color: #4CAF50; font-weight: bold; display: none; }
+        .item.checked .check-mark { display: block; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>📌 오늘의 할 일</h2>
+    <div id="list-container">
+        </div>
+</div>
+
+<script>
+    // 1. 데이터 정의 (아이콘과 텍스트)
+    const initialData = [
+        { id: 1, icon: "💧", text: "물 2리터 마시기" },
+        { id: 2, icon: "🧘", text: "스트레칭 하기" },
+        { id: 3, icon: "📖", text: "책 10페이지 읽기" }
+    ];
+
+    const listContainer = document.getElementById('list-container');
+
+    // 2. 로컬 스토리지에서 상태 불러오기
+    let savedStatus = JSON.parse(localStorage.getItem('checkStatus')) || {};
+
+    // 3. 리스트 그리기 함수
+    function render() {
+        listContainer.innerHTML = '';
+        initialData.forEach(data => {
+            const isChecked = savedStatus[data.id] || false;
+            
+            const div = document.createElement('div');
+            div.className = `item ${isChecked ? 'checked' : ''}`;
+            div.innerHTML = `
+                <span class="icon">${data.icon}</span>
+                <span class="text">${data.text}</span>
+                <span class="check-mark">✓</span>
+            `;
+
+            // 클릭 이벤트: 상태 반전 및 저장
+            div.onclick = () => {
+                savedStatus[data.id] = !isChecked;
+                localStorage.setItem('checkStatus', JSON.stringify(savedStatus));
+                render(); // 화면 다시 그리기
+            };
+
+            listContainer.appendChild(div);
+        });
+    }
+
+    render();
+</script>
+
+</body>
+</html>
