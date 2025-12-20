@@ -2,87 +2,180 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>모비노기 데코 체크 리스트</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>데코 체크리스트</title>
     <style>
-        body { font-family: sans-serif; display: flex; justify-content: center; padding: 50px; background: #f5f5f5; }
-        .container { width: 300px; background: white; padding: 20px; border-radius: 12px; shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        h2 { font-size: 1.2rem; margin-bottom: 20px; color: #333; }
+        body { background-color: #1a1a1a; color: #ffffff; font-family: 'Pretendard', sans-serif; margin: 0; padding: 40px 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { width: 100%; max-width: 1100px; position: relative; }
         
-        /* 아이템 스타일 */
-        .item {
-            display: flex;
-            align-items: center;
-            padding: 12px;
-            margin-bottom: 8px;
-            border: 1px solid #eee;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: 0.2s;
-        }
+        /* 상단 메뉴 및 제목 레이아웃 */
+        .top-header { margin-bottom: 40px; position: relative; }
+        .main-title { font-size: 2rem; font-weight: 800; margin: 0 0 15px 0; color: #fff; letter-spacing: -1px; }
+        .main-title span { color: #4CAF50; } /* 포인트 컬러 */
 
-        /* 딤드(Dimmed) 및 체크 처리 */
-        .item.checked {
-            background-color: #f9f9f9;
-            opacity: 0.5; /* 흐리게 처리 */
+        /* 사용자 안내 박스 */
+        .info-box { 
+            background: #252525; border: 1px solid #333; border-radius: 12px; 
+            padding: 20px; margin-bottom: 30px; line-height: 1.6; font-size: 0.9rem; color: #bbb;
         }
-        .item.checked .text {
-            text-decoration: line-through;
-        }
+        .info-box b { color: #fff; }
+        .info-box ul { margin: 10px 0 0 0; padding-left: 20px; }
 
-        .icon { margin-right: 12px; font-size: 1.2rem; }
-        .text { flex-grow: 1; font-size: 1rem; }
-        .check-mark { color: #4CAF50; font-weight: bold; display: none; }
-        .item.checked .check-mark { display: block; }
+        /* 버튼 메뉴 */
+        .top-menu { position: absolute; top: 5px; right: 0; display: flex; gap: 8px; }
+        .btn-sub { background: #333; border: 1px solid #444; color: #ccc; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: 0.2s; }
+        .btn-sub:hover { background: #444; color: #fff; border-color: #666; }
+
+        /* 기존 스타일 유지 */
+        .category-section { margin-bottom: 60px; width: 100%; }
+        .category-title { font-size: 1.4rem; font-weight: 700; color: #eee; margin-bottom: 20px; padding-left: 10px; border-left: 4px solid #4CAF50; }
+        .grid-container { display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px; }
+        .card { background: #262626; border: 2px solid transparent; border-radius: 15px; padding: 20px 10px; text-align: center; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+        .card.checked { border-color: #4CAF50; background: #1f1f1f; box-shadow: 0 0 15px rgba(76, 175, 80, 0.1); }
+        .card.checked .icon-box img, .card.checked .name { opacity: 0.2; filter: grayscale(100%); }
+        .icon-box { width: 70px; height: 70px; background: #383838; border-radius: 12px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .icon-box img { width: 85%; height: 85%; object-fit: contain; }
+        .name { font-size: 0.9rem; color: #ccc; font-weight: 500; }
+
+        /* 반응형 디자인 */
+        @media (max-width: 900px) { .grid-container { grid-template-columns: repeat(4, 1fr); } }
+        @media (max-width: 600px) { 
+            .grid-container { grid-template-columns: repeat(2, 1fr); }
+            .top-menu { position: static; margin-bottom: 20px; justify-content: flex-end; }
+            .main-title { font-size: 1.6rem; }
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>📌 오늘의 할 일</h2>
-    <div id="list-container">
+    <header class="top-header">
+        <h1 class="main-title">📍 나의 <span>데코</span> 체크리스트</h1>
+        
+        <div class="top-menu">
+            <button class="btn-sub" onclick="exportData()">📤 내보내기 (백업)</button>
+            <button class="btn-sub" onclick="document.getElementById('fileInput').click()">📥 가져오기 (복구)</button>
+            <input type="file" id="fileInput" style="display:none" accept=".json" onchange="importData(event)">
         </div>
+
+        <div class="info-box">
+            <b>💡 사용 가이드</b>
+            <ul>
+                <li>아이콘 카드를 클릭하여 획득 여부를 체크할 수 있습니다.</li>
+                <li>체크한 내역은 브라우저에 자동 저장되지만, <b>방문 기록을 삭제하면 초기화</b>될 수 있습니다.</li>
+                <li>정기적으로 <b>[내보내기]</b>를 눌러 백업 파일을 저장해두는 것을 권장합니다.</li>
+                <li>기기를 변경하거나 내역을 복구할 때는 <b>[가져오기]</b>를 통해 저장해둔 파일을 불러오세요.</li>
+                <li>해당 체크리스트는 <b>제작대</b>의 목록을 기준으로 작성되어 있습니다.</li>
+                <li>본인의 <b>도감과 비교</b>해가며 체크 하는 방식을 추천드립니다.</li>
+            </ul>
+        </div>
+    </header>
+
+    <div id="main-container"></div>
 </div>
 
 <script>
-    // 1. 데이터 정의 (아이콘과 텍스트)
-    const initialData = [
-        { id: 1, icon: "💧", text: "물 2리터 마시기" },
-        { id: 2, icon: "🧘", text: "스트레칭 하기" },
-        { id: 3, icon: "📖", text: "책 10페이지 읽기" }
+    const storageKey = 'alolChecklistImg';
+    const categoryData = [
+        { 
+            categoryName: "작은 테이블", 
+		//작은 테이블
+		//25.12.20 : 9개 000~008
+            items: [
+                { id: "it-1-0", img: "000", name: "실속형 협탁(컬러A)" },
+                { id: "it-1-1", img: "001", name: "실속형 협탁(컬러B)" },
+                { id: "it-1-2", img: "002", name: "독특한 원형 협탁(컬러A)" },
+                { id: "it-1-3", img: "003", name: "독특한 원형 협탁(컬러B)" },
+                { id: "it-1-4", img: "004", name: "독특한 원형 협탁(컬러C)" },
+                { id: "it-1-5", img: "005", name: "아늑한 협탁(컬러A)" },
+                { id: "it-1-6", img: "006", name: "아늑한 협탁(컬러B)" },
+                { id: "it-1-7", img: "007", name: "아늑한 협탁(컬러C)" },
+                { id: "it-1-8", img: "008", name: "아늑한 협탁(컬러D)" }
+            ] 
+        },
+        { categoryName: "벽 수납장", items: [{ id: "it-2", img: "002", name: "벽 수납장 1" }] },
+        { categoryName: "의자", items: [{ id: "it-3", img: "003", name: "의자 1" }] },
+        { categoryName: "침대", items: [{ id: "it-4", img: "004", name: "침대 1" }] },
+        { categoryName: "일상가구", items: [{ id: "it-5", img: "005", name: "가구 1" }] },
+        { categoryName: "잡화", items: [{ id: "it-6", img: "006", name: "잡화 1" }] },
+        { categoryName: "조경", items: [{ id: "it-7", img: "007", name: "조경 1" }] },
+        { categoryName: "벽걸이", items: [{ id: "it-8", img: "008", name: "벽걸이 1" }] },
+        { categoryName: "러그", items: [{ id: "it-9", img: "009", name: "러그 1" }] },
+        { categoryName: "커튼", items: [{ id: "it-10", img: "010", name: "커튼 1" }] },
+        { categoryName: "특수가구", items: [{ id: "it-11", img: "011", name: "특수 1" }] },
+        { categoryName: "특수장식", items: [{ id: "it-12", img: "012", name: "장식 1" }] },
+        { categoryName: "스탠드 조명", items: [{ id: "it-13", img: "013", name: "조명 1" }] },
+        { categoryName: "탁상 조명", items: [{ id: "it-14", img: "014", name: "조명 2" }] },
+        { categoryName: "벽 조명", items: [{ id: "it-15", img: "015", name: "조명 3" }] },
+        { categoryName: "천장 조명", items: [{ id: "it-16", img: "016", name: "조명 4" }] },
+        { categoryName: "벽", items: [{ id: "it-17", img: "017", name: "벽 1" }] },
+        { categoryName: "기둥", items: [{ id: "it-18", img: "018", name: "기둥 1" }] },
+        { categoryName: "벽지", items: [{ id: "it-19", img: "019", name: "벽지 1" }] },
+        { categoryName: "바닥", items: [{ id: "it-20", img: "020", name: "바닥 1" }] }
     ];
 
-    const listContainer = document.getElementById('list-container');
+    const mainContainer = document.getElementById('main-container');
+    let savedStatus = JSON.parse(localStorage.getItem(storageKey)) || {};
 
-    // 2. 로컬 스토리지에서 상태 불러오기
-    let savedStatus = JSON.parse(localStorage.getItem('checkStatus')) || {};
-
-    // 3. 리스트 그리기 함수
     function render() {
-        listContainer.innerHTML = '';
-        initialData.forEach(data => {
-            const isChecked = savedStatus[data.id] || false;
+        mainContainer.innerHTML = '';
+        categoryData.forEach(cat => {
+            const section = document.createElement('div');
+            section.className = 'category-section';
+            section.innerHTML = `<div class="category-title">${cat.categoryName}</div>`;
             
-            const div = document.createElement('div');
-            div.className = `item ${isChecked ? 'checked' : ''}`;
-            div.innerHTML = `
-                <span class="icon">${data.icon}</span>
-                <span class="text">${data.text}</span>
-                <span class="check-mark">✓</span>
-            `;
+            const grid = document.createElement('div');
+            grid.className = 'grid-container';
 
-            // 클릭 이벤트: 상태 반전 및 저장
-            div.onclick = () => {
-                savedStatus[data.id] = !isChecked;
-                localStorage.setItem('checkStatus', JSON.stringify(savedStatus));
-                render(); // 화면 다시 그리기
-            };
-
-            listContainer.appendChild(div);
+            cat.items.forEach(item => {
+                const isChecked = savedStatus[item.id] || false;
+                const card = document.createElement('div');
+                card.className = `card ${isChecked ? 'checked' : ''}`;
+                card.innerHTML = `
+                    <div class="icon-box"><img src="icons/${item.img}.png" alt="${item.name}" onerror="this.src='https://via.placeholder.com/70?text=No+Img'"></div>
+                    <div class="name">${item.name}</div>
+                `;
+                card.onclick = () => {
+                    savedStatus[item.id] = !isChecked;
+                    localStorage.setItem(storageKey, JSON.stringify(savedStatus));
+                    render();
+                };
+                grid.appendChild(card);
+            });
+            section.appendChild(grid);
+            mainContainer.appendChild(section);
         });
+    }
+
+    function exportData() {
+        const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(JSON.stringify(savedStatus));
+        const link = document.createElement('a');
+        link.setAttribute('href', dataUri);
+        link.setAttribute('download', 'alol_deco_backup.json');
+        link.click();
+    }
+
+    function importData(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const importedData = JSON.parse(e.target.result);
+                if (confirm('기존 체크 내역을 덮어쓰고 복구하시겠습니까?')) {
+                    savedStatus = importedData;
+                    localStorage.setItem(storageKey, JSON.stringify(savedStatus));
+                    render();
+                    alert('성공적으로 복구되었습니다!');
+                }
+            } catch (err) {
+                alert('유효한 백업 파일이 아닙니다.');
+            }
+        };
+        reader.readAsText(file);
     }
 
     render();
 </script>
-
 </body>
 </html>
